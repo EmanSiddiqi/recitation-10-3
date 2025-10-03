@@ -74,3 +74,37 @@ TEST_CASE("Example: Print Prompt Ledger", "[ex-3]") {
   atm.PrintLedger("./prompt.txt", 12345678, 1234);
   REQUIRE(CompareFiles("./ex-1.txt", "./prompt.txt"));
 }
+
+TEST_CASE("RegisterAccount - duplicate account throws exception", "[register-1]") {
+  Atm atm;
+  atm.RegisterAccount(12345678, 1234, "John Doe", 100.0);
+  REQUIRE_THROWS_AS(atm.RegisterAccount(12345678, 1234, "Jane Doe", 200.0), 
+                    std::invalid_argument);
+}
+
+
+TEST_CASE("WithdrawCash - withdrawing exact balance throws exception", "[withdraw-1]") {
+  Atm atm;
+  atm.RegisterAccount(12345678, 1234, "Sam Sepiol", 100.0);
+  REQUIRE_THROWS_AS(atm.WithdrawCash(12345678, 1234, 100.0), 
+                    std::runtime_error);
+}
+
+
+TEST_CASE("DepositCash - zero amount throws exception", "[deposit-1]") {
+  Atm atm;
+  atm.RegisterAccount(12345678, 1234, "Sam Sepiol", 300.30);
+  REQUIRE_THROWS_AS(atm.DepositCash(12345678, 1234, 0.0), 
+                    std::invalid_argument);
+}
+
+TEST_CASE("PrintLedger - correct format with actual transactions", "[ledger-1]") {
+  Atm atm;
+  atm.RegisterAccount(12345678, 1234, "Sam Sepiol", 300.30);
+  atm.WithdrawCash(12345678, 1234, 200.40);
+  atm.DepositCash(12345678, 1234, 40000.00);
+  atm.DepositCash(12345678, 1234, 32000.00);
+  atm.PrintLedger("./generated_ledger.txt", 12345678, 1234);
+  REQUIRE(CompareFiles("./ex-1.txt", "./generated_ledger.txt"));
+}
+
